@@ -90,3 +90,80 @@ function viewAllEmployees() {
     init();
   });
 }
+
+function addDepartment() {
+  inquirer.prompt([
+    {
+      type: 'input',
+      name: 'departmentName',
+      message: 'Enter the name of the department:',
+    },
+  ]).then((answer) => {
+    const query = 'INSERT INTO department SET ?';
+    connection.query(query, { department_name: answer.departmentName }, (err, res) => {
+      if (err) throw err;
+      console.log(`${answer.departmentName} added successfully!`);
+      init();
+    });
+  });
+}
+
+function addEmployee() {
+  const rolesQuery = 'SELECT role_id, title FROM role';
+  const managersQuery = 'SELECT employee_id, CONCAT(first_name, " ", last_name) AS manager_name FROM employee';
+  
+  connection.query(rolesQuery, (err, roles) => {
+    if (err) throw err;
+
+    connection.query(managersQuery, (err, managers) => {
+      if (err) throw err;
+
+      inquirer.prompt([
+        {
+          type: 'input',
+          name: 'firstName',
+          message: "Enter the employee's first name:",
+        },
+        {
+          type: 'input',
+          name: 'lastName',
+          message: "Enter the employee's last name:",
+        },
+        {
+          type: 'list',
+          name: 'role',
+          message: "Select the employee's role:",
+          choices: roles.map((role) => ({
+            name: role.title,
+            value: role.role_id,
+          })),
+        },
+        {
+          type: 'list',
+          name: 'manager',
+          message: "Select the employee's manager:",
+          choices: managers.map((manager) => ({
+            name: manager.manager_name,
+            value: manager.employee_id,
+          })),
+          default: null,
+        },
+      ]).then((answer) => {
+        const query = 'INSERT INTO employee SET ?';
+        connection.query(query,
+          {
+            first_name: answer.firstName,
+            last_name: answer.lastName,
+            role_id: answer.role,
+            manager_id: answer.manager,
+          },
+          (err, res) => {
+            if (err) throw err;
+            console.log(`${answer.firstName} ${answer.lastName} added successfully!`);
+            init();
+          }
+        );
+      });
+    });
+  });
+}
