@@ -167,3 +167,91 @@ function addEmployee() {
     });
   });
 }
+
+function updateEmployeeRole() {
+  const employeesQuery = 'SELECT employee_id, CONCAT(first_name, " ", last_name) AS employee_name FROM employee';
+  const rolesQuery = 'SELECT role_id, title FROM role';
+
+  connection.query(employeesQuery, (err, employees) => {
+    if (err) throw err;
+
+    connection.query(rolesQuery, (err, roles) => {
+      if (err) throw err;
+
+      inquirer.prompt([
+        {
+          type: 'list',
+          name: 'employee',
+          message: 'Select the employee you want to update:',
+          choices: employees.map((employee) => ({
+            name: employee.employee_name,
+            value: employee.employee_id,
+          })),
+        },
+        {
+          type: 'list',
+          name: 'newRole',
+          message: 'Select the new role for the employee:',
+          choices: roles.map((role) => ({
+            name: role.title,
+            value: role.role_id,
+          })),
+        },
+      ]).then((answer) => {
+        const query = 'UPDATE employee SET role_id = ? WHERE employee_id = ?';
+        connection.query(query,
+          [answer.newRole, answer.employee],
+          (err, res) => {
+            if (err) throw err;
+            console.log('Employee role updated successfully!');
+            init();
+          }
+        );
+      });
+    });
+  });
+}
+
+function addRole() {
+  const departmentsQuery = 'SELECT department_id, department_name FROM department';
+
+  connection.query(departmentsQuery, (err, departments) => {
+    if (err) throw err;
+
+    inquirer.prompt([
+      {
+        type: 'input',
+        name: 'roleTitle',
+        message: 'Enter the title of the role:',
+      },
+      {
+        type: 'input',
+        name: 'roleSalary',
+        message: 'Enter the salary for the role:',
+      },
+      {
+        type: 'list',
+        name: 'roleDepartment',
+        message: 'Select the department for the role:',
+        choices: departments.map((department) => ({
+          name: department.department_name,
+          value: department.department_id,
+        })),
+      },
+    ]).then((answer) => {
+      const query = 'INSERT INTO role SET ?';
+      connection.query(query,
+        {
+          title: answer.roleTitle,
+          salary: answer.roleSalary,
+          department_id: answer.roleDepartment,
+        },
+        (err, res) => {
+          if (err) throw err;
+          console.log(`${answer.roleTitle} added successfully!`);
+          init();
+        }
+      );
+    });
+  });
+}
