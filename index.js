@@ -16,54 +16,52 @@ connection.connect((err) => {
 });
 
 function init() {
-  inquirer
-    .prompt({
-      name: 'choice',
-      type: 'list',
-      message: 'What would you like to do?',
-      choices: [
-        'View all departments',
-        'View all roles',
-        'View all employees',
-        'Add a department',
-        'Add a role',
-        'Add an employee',
-        'Update an employee role',
-        'Exit',
-      ],
-    })
-    .then((answer) => {
-      switch (answer.choice) {
-        case 'View all departments':
-          viewAllDepartments();
-          break;
-        case 'View all roles':
-          viewAllRoles();
-          break;
-        case 'View all employees':
-          viewAllEmployees();
-          break;
-        case 'Add a department':
-          addDepartment();
-          break;
-        case 'Add a role':
-          addRole();
-          break;
-        case 'Add an employee':
-          addEmployee();
-          break;
-        case 'Update an employee role':
-          updateEmployeeRole();
-          break;
-        case 'Exit':
-          connection.end();
-          console.log('Application exited.');
-          break;
-        default:
-          console.log('An error occured with that selection.');
-          break;
-      }
-    });
+  inquirer.prompt({
+    name: 'choice',
+    type: 'list',
+    message: 'What would you like to do?',
+    choices: [
+      'View all departments',
+      'View all roles',
+      'View all employees',
+      'Add a department',
+      'Add a role',
+      'Add an employee',
+      'Update an employee role',
+      'Exit',
+    ],
+  }).then((answer) => {
+    switch (answer.choice) {
+      case 'View all departments':
+        viewAllDepartments();
+        break;
+      case 'View all roles':
+        viewAllRoles();
+        break;
+      case 'View all employees':
+        viewAllEmployees();
+        break;
+      case 'Add a department':
+        addDepartment();
+        break;
+      case 'Add a role':
+        addRole();
+        break;
+      case 'Add an employee':
+        addEmployee();
+        break;
+      case 'Update an employee role':
+        updateEmployeeRole();
+        break;
+      case 'Exit':
+        connection.end();
+        console.log('Application exited.');
+        break;
+      default:
+        console.log('An error occured with that selection.');
+        break;
+    }
+  });
 }
 
 function viewAllDepartments() {
@@ -77,6 +75,15 @@ function viewAllDepartments() {
 
 function viewAllRoles() {
   const query = 'SELECT role.role_id, role.title, department.department_name, role.salary FROM role INNER JOIN department ON role.department_id = department.department_id';
+  connection.query(query, (err, res) => {
+    if (err) throw err;
+    console.table(res);
+    init();
+  });
+}
+
+function viewAllEmployees() {
+  const query = 'SELECT employee.employee_id, employee.first_name, employee.last_name, role.title, department.department_name, role.salary, CONCAT(manager.first_name, " ", manager.last_name) AS manager FROM employee LEFT JOIN role ON employee.role_id = role.role_id LEFT JOIN department ON role.department_id = department.department_id LEFT JOIN employee manager ON employee.manager_id = manager.employee_id';
   connection.query(query, (err, res) => {
     if (err) throw err;
     console.table(res);
