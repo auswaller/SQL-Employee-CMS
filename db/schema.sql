@@ -1,7 +1,7 @@
 DROP DATABASE IF EXISTS employeeCMS_db;
 
 CREATE DATABASE employeeCMS_db;
-
+USE employeeCMS_db;
 
 CREATE TABLE department (
   department_id INT AUTO_INCREMENT PRIMARY KEY,

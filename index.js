@@ -65,3 +65,12 @@ function init() {
       }
     });
 }
+
+function viewAllDepartments() {
+  const query = 'SELECT * FROM department';
+  connection.query(query, (err, res) => {
+    if (err) throw err;
+    console.table(res);
+    init();
+  });
+}
