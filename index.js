@@ -28,6 +28,10 @@ function init() {
       'Add a role',
       'Add an employee',
       'Update an employee role',
+      'Update an employee manager',
+      'Delete a role',
+      'Delete a department',
+      'Delete an employee',
       'Exit',
     ],
   }).then((answer) => {
@@ -52,6 +56,18 @@ function init() {
         break;
       case 'Update an employee role':
         updateEmployeeRole();
+        break;
+      case 'Update an employee manager':
+        updateEmployeeManager();
+        break;
+      case 'Delete a role':
+        deleteRole();
+        break;
+      case 'Delete a department':
+        deleteDepartment();
+        break;
+      case 'Delete an employee':
+        deleteEmployee();
         break;
       case 'Exit':
         connection.end();
@@ -252,6 +268,129 @@ function addRole() {
           init();
         }
       );
+    });
+  });
+}
+
+function updateEmployeeManager() {
+  const employeesQuery = 'SELECT employee_id, CONCAT(first_name, " ", last_name) AS employee_name FROM employee';
+
+  connection.query(employeesQuery, (err, employees) => {
+    if (err) throw err;
+
+    inquirer.prompt([
+      {
+        type: 'list',
+        name: 'employee',
+        message: 'Select the employee you want to update:',
+        choices: employees.map((employee) => ({
+          name: employee.employee_name,
+          value: employee.employee_id,
+        })),
+      },
+      {
+        type: 'list',
+        name: 'manager',
+        message: 'Select the new manager for the employee:',
+        choices: employees.map((employee) => ({
+          name: employee.employee_name,
+          value: employee.employee_id,
+        })),
+        default: null,
+      },
+    ]).then((answer) => {
+      const query = 'UPDATE employee SET manager_id = ? WHERE employee_id = ?';
+      connection.query(query,
+        [answer.manager, answer.employee],
+        (err, res) => {
+          if (err) throw err;
+          init();
+        }
+      );
+    });
+  });
+}
+
+function deleteRole() {
+  const rolesQuery = 'SELECT role_id, title FROM role';
+
+  connection.query(rolesQuery, (err, roles) => {
+    if (err) throw err;
+
+    inquirer.prompt([
+      {
+        type: 'list',
+        name: 'role',
+        message: 'Select the role to delete:',
+        choices: roles.map((role) => ({
+          name: role.title,
+          value: role.role_id,
+        })),
+      },
+    ]).then((answer) => {
+      const query = 'DELETE FROM role WHERE role_id = ?';
+
+      connection.query(query, [answer.role], (err, res) => {
+        if (err) throw err;
+        console.log('Role deleted successfully!');
+        init();
+      });
+    });
+  });
+}
+
+function deleteDepartment() {
+  const departmentsQuery = 'SELECT department_id, department_name FROM department';
+
+  connection.query(departmentsQuery, (err, departments) => {
+    if (err) throw err;
+
+    inquirer.prompt([
+      {
+        type: 'list',
+        name: 'department',
+        message: 'Select the department to delete:',
+        choices: departments.map((department) => ({
+          name: department.department_name,
+          value: department.department_id,
+        })),
+      },
+    ]).then((answer) => {
+      const query = 'DELETE FROM department WHERE department_id = ?';
+
+      connection.query(query, [answer.department], (err, res) => {
+        if (err) throw err;
+        console.log('Department deleted successfully!');
+        init();
+      });
+    });
+  });
+}
+
+function deleteEmployee() {
+  const employeesQuery = 'SELECT employee_id, CONCAT(first_name, " ", last_name) AS employee_name FROM employee';
+
+  connection.query(employeesQuery, (err, employees) => {
+    if (err) throw err;
+
+    inquirer.prompt([
+      {
+        type: 'list',
+        name: 'employee',
+        message: 'Select the employee to delete:',
+        choices: employees.map((employee) => ({
+          name: employee.employee_name,
+          value: employee.employee_id,
+        })),
+      },
+    ]).then((answer) => {
+      const query = 'DELETE FROM employee WHERE employee_id = ?';
+
+      connection.query(query, [answer.employee], (err, res) => {
+        if (err) throw err;
+        console.log('Employee deleted successfully!');
+        init();
+      });
     });
   });
 }
